@@ -93,7 +93,7 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
         for index, row in filtered_df.iterrows():
             # Create Question Number
             filtered_df.loc[index, "QNum"] = f"Q-{index + 1}"
-            filtered_df["Choices"][index] = sample(row["Choices"], k=len(row["Choices"]))
+            filtered_df["Choices"][index] = sample(row["Choices"], k=4)
 
         filtered_df["Correct"] = False
         filtered_df["Done"] = False
