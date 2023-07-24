@@ -50,6 +50,61 @@ def generate_streak_info(results, col:str = "Correct"):
             df.loc[index, "Streak"] = 0
     return df
 
+@st.cache_data
+def generate_runchart(runchartdf):
+    runchart = alt.Chart(runchartdf).mark_point(filled=True, size=400).encode(
+        x=alt.X("QNum", title="Question Number", axis=alt.Axis(labelAngle=0)),
+        y=alt.Y("Correct", title=""),
+        color=alt.Color("Correct", scale=alt.Scale(domain=["Correct", "Incorrect"], range=["green", "red"]), legend=None),
+        tooltip=[alt.Tooltip("QNum", title="Question No"), alt.Tooltip("Correct", title="Status"), alt.Tooltip("Streak", title="Streak")],
+        shape=alt.Shape("Correct", scale=alt.Scale(domain=["Correct", "Incorrect"], range=['circle', 'triangle-up'])),
+    ).properties(
+        height=200
+    ).interactive()
+
+    return runchart
+
+@st.cache_data
+def write_incorrect_questions(incorrect):
+    incorrect_strings = []
+    if st.session_state["auth"]:
+        for index, row in incorrect.iterrows():
+            string = (
+                f"""
+<details><summary style='font-size: 1.2em;'>{row["QNum"].replace("Q-", "Question #")}</summary>
+<br>
+
+[#{row["ID"]}]({st.secrets["GSHEETS_URL"]}{row["ID"]+1}) {row["Question"]}
+
+|            |                               |
+| :--------- | :---------------------------- |
+| **Answer** | {row["Answer"]}               |
+| **Tags**   | {',&ensp;'.join(row["Tags"])} |
+<hr>
+</details>
+                """
+            )
+            incorrect_strings.append(string)
+    else:
+        for index, row in incorrect.iterrows():
+            string = (
+                f"""
+<details><summary style='font-size: 1.2em;'>{row["QNum"].replace("Q-", "Question #")}</summary>
+<br>
+
+{row["Question"]}
+
+|            |                               |
+| :--------- | :---------------------------- |
+| **Answer** | {row["Answer"]}               |
+| **Tags**   | {',&ensp;'.join(row["Tags"])} |
+<hr>
+</details>
+                """
+            )
+            incorrect_strings.append(string)
+    return incorrect_strings
+
 if "problem_set" not in st.session_state:
     st.error("**No problem set found!** Please generate a problem set first.", icon="❗")
     st.stop()
@@ -79,15 +134,7 @@ with st.expander("Result Summary", expanded=True):
 
 # Generate altair scatter plot of correct and incorrect items vs question number, change symbol to checkmark or cross
 st.markdown("#### Run Chart")
-runchart = alt.Chart(runchartdf).mark_point(filled=True, size=400).encode(
-    x=alt.X("QNum", title="Question Number", axis=alt.Axis(labelAngle=0)),
-    y=alt.Y("Correct", title=""),
-    color=alt.Color("Correct", scale=alt.Scale(domain=["Correct", "Incorrect"], range=["green", "red"]), legend=None),
-    tooltip=[alt.Tooltip("QNum", title="Question No"), alt.Tooltip("Correct", title="Status"), alt.Tooltip("Streak", title="Streak")],
-    shape=alt.Shape("Correct", scale=alt.Scale(domain=["Correct", "Incorrect"], range=['circle', 'triangle-up'])),
-).properties(
-    height=200
-).interactive()
+runchart = generate_runchart(runchartdf)
 
 st.altair_chart(runchart, use_container_width=True)
 
@@ -101,42 +148,9 @@ incorrect_qid_list = [str(id) for id in incorrect["ID"].tolist()].copy()
 incorrect_qid_list.sort()
 incorrect_qid_list = '; '.join(incorrect_qid_list)
 incorrect_tags_list = '; '.join(list(set([item for sublist in incorrect["Tags"].tolist() for item in sublist])))
-if st.session_state["auth"]:
-    for index, row in incorrect.iterrows():
-        st.markdown(
-            f"""
-<details><summary style='font-size: 1.2em;'>{row["QNum"].replace("Q-", "Question #")}</summary>
-<br>
-
-[#{row["ID"]}]({st.secrets["GSHEETS_URL"]}{row["ID"]+1}) {row["Question"]}
-
-|            |                               |
-| :--------- | :---------------------------- |
-| **Answer** | {row["Answer"]}               |
-| **Tags**   | {',&ensp;'.join(row["Tags"])} |
-<hr>
-</details>
-            """,
-            unsafe_allow_html=True
-        )
-else:
-    for index, row in incorrect.iterrows():
-        st.markdown(
-            f"""
-<details><summary style='font-size: 1.2em;'>{row["QNum"].replace("Q-", "Question #")}</summary>
-<br>
-
-{row["Question"]}
-
-|            |                               |
-| :--------- | :---------------------------- |
-| **Answer** | {row["Answer"]}               |
-| **Tags**   | {',&ensp;'.join(row["Tags"])} |
-<hr>
-</details>
-            """,
-            unsafe_allow_html=True
-        )
+incorrect_strings = write_incorrect_questions(incorrect)
+for q_string in incorrect_strings:
+    st.markdown(q_string, unsafe_allow_html=True)
 
 with st.sidebar:
     if st.session_state["auth"]:
@@ -151,6 +165,7 @@ with st.sidebar:
                 duration,
                 '=(INDIRECT("RC[-3]",FALSE))/INDIRECT("RC[-2]",FALSE)',
                 '=(INDIRECT("RC[-4]",FALSE)+1)/(INDIRECT("RC[-3]",FALSE)+2)',
+                max(results['Streak']),
                 run_tags,
                 incorrect_qid_list,
                 incorrect_tags_list
