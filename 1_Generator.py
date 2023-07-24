@@ -3,9 +3,8 @@ from random import sample
 import pandas as pd
 import streamlit as st
 
-st.set_page_config(page_title="QnA", page_icon="📚")
-# st.title("QnA")
 
+# Functions ===================================================================
 @st.cache_data
 def get_data():
     qna_csv = st.secrets["QNA_CSV"]
@@ -43,11 +42,18 @@ def generate_50_set(df, tags):
     filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
     return filtered_df.copy()
 
+# Setup =======================================================================
+st.set_page_config(page_title="Problem Set Generator", page_icon="🔁")
+st.title("The Generator")
+
 if "auth" not in st.session_state:
     st.session_state["auth"] = False
 
 df = get_data()
 tags = get_tag_list(df)
+
+
+# Main ========================================================================
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
     selected_tags = st.multiselect("Select Tags", tags, default=["PCP"])
@@ -137,3 +143,23 @@ if audio_on:
 else:
     st.session_state["fanfare"] = ""
 st.session_state["playsound"] = audio_on
+
+st.divider()
+st.subheader("About this Site")
+st.markdown(
+    """
+    This site was created to help me **generate problem sets** from a _random_ sample of questions.
+    The question topics are for the Chemical Engineering Board exam that I've compiled in a CSV file.
+
+    The site is built using **[Streamlit](https://streamlit.io)** and is hosted on **[Streamlit Cloud](https://share.streamlit.io/)**.
+
+    The site currently has these pages:
+    |               |                                                                                                                       |
+    | ------------- | --------------------------------------------------------------------------------------------------------------------- |
+    | **Generator** | This page allows you to generate a problem set based on the tags you select and number of questions you want.         |
+    | **Quiz**      | This page allows you to take the quiz. You can navigate through the questions using the buttons or the dropdown menu. |
+    | **Results**   | This page shows you the results of the quiz you took. It also shows you a run chart of your answers.                  |
+    | **Analytics** | This page is specific to me and shows me the analytics of the questions I've answered over time. No peeking.          |
+    """,
+    unsafe_allow_html=True
+)
