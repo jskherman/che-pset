@@ -7,6 +7,8 @@ if "problem_set" not in st.session_state:
     st.error("**No problem set found!** Please generate a problem set first.", icon="❗")
     st.stop()
 
+st.set_page_config(page_title="Quiz :: Problem Set Generator", page_icon="📝")
+
 pset = st.session_state["problem_set"]
 
 if "index" not in st.session_state:
