@@ -84,14 +84,14 @@ def write_incorrect_questions(incorrect):
             incorrect_strings.append(string)
     return incorrect_strings
 
+st.set_page_config(page_title="Results :: Problem Set Generator", page_icon="🏆")
+
 if "problem_set" not in st.session_state:
     st.error("**No problem set found!** Please generate a problem set first.", icon="❗")
     st.stop()
 if not st.session_state["problem_set"]["Done"].all():
     st.error("**Please complete the quiz first!**", icon="❗")
     st.stop()
-
-st.set_page_config(page_title="Results :: Problem Set Generator", page_icon="🏆")
 
 gc = gspread.service_account_from_dict(st.secrets["GSHEETS_CREDS"])
 sh = gc.open("Board Review")
