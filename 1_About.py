@@ -51,6 +51,7 @@ tags = get_tag_list(df)
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
     selected_tags = st.multiselect("Select Tags", tags, default=["PCP"])
+    st.session_state["selected_tags"] = selected_tags.copy()
     filtered_df = df[df["Tags"].apply(lambda x: any(item in x for item in selected_tags))].copy()
     filtered_df.sort_values(by="ID").reset_index(inplace=True, drop=True)
 
@@ -60,7 +61,7 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
     else:
         if len(filtered_df) > 1:
             num_questions = st.slider("Number of questions to generate:", min_value=1, max_value=len(filtered_df), value=len(filtered_df))
-            filtered_df = filtered_df.sample(n=num_questions, replace=False).sort_values(by="ID")
+            filtered_df = filtered_df.sample(n=num_questions, replace=False)
         else:
             st.info("&emsp;**Only _:red[one]_ question found.**", icon="ℹ️")
 
