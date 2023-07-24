@@ -90,7 +90,7 @@ with st.form("Question Form"):
 
 
 if pset["Done"].all():
-    if (sum(pset["Correct"]) == len(pset)): #and (len(pset) > 50):
+    if (sum(pset["Correct"]) == len(pset)) and (len(pset) > 50):
         st.markdown(load_fanfare(9999), unsafe_allow_html=True)
     else:
         st.markdown(st.session_state["fanfare"], unsafe_allow_html=True)
