@@ -1,5 +1,5 @@
 # App specific ignores
-*.mp3
+# *.mp3
 qna.csv
 oldapp.py
 secrets.toml

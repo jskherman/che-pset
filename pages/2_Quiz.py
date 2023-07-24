@@ -1,6 +1,8 @@
 import pandas as pd
 import streamlit as st
 
+from App import load_fanfare
+
 if "problem_set" not in st.session_state:
     st.error("**No problem set found!** Please generate a problem set first.", icon="❗")
     st.stop()
@@ -86,9 +88,13 @@ with st.form("Question Form"):
 
 
 if pset["Done"].all():
+    if (sum(pset["Correct"]) == len(pset)): #and (len(pset) > 50):
+        st.markdown(load_fanfare(9999), unsafe_allow_html=True)
+    else:
+        st.markdown(st.session_state["fanfare"], unsafe_allow_html=True)
     st.balloons()
     st.toast("**NICE JOB!**  \nYou completed the problem set!", icon="🎉")
-    st.markdown(st.session_state["fanfare"], unsafe_allow_html=True)
+    
 
 with st.sidebar:
     st.info("If it does not navigate properly,  \npress **R** to REFRESH.")

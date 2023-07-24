@@ -22,10 +22,21 @@ def get_tag_list(df: pd.DataFrame) -> list:
     tags = {x for l in df["Tags"] for x in l}
     return list(tags)
 
-def load_fanfare():
+def load_fanfare(n):
     import base64
 
-    fanfare_file = open("assets/fanfare.mp3", "rb")
+    if n > 9000:
+        fanfare_file = open("assets/fanfare_9999.mp3", "rb")
+    elif n > 75:
+        fanfare_file = open("assets/fanfare_100.mp3", "rb")
+    elif n > 50:
+        fanfare_file = open("assets/fanfare_75.mp3", "rb")
+    elif n > 25:
+        fanfare_file = open("assets/fanfare_50.mp3", "rb")
+    elif n > 10:
+        fanfare_file = open("assets/fanfare_25.mp3", "rb")
+    else:
+        fanfare_file = open("assets/fanfare_5.mp3", "rb")
     fanfare_html = f'\n<audio autoplay class="stAudio">\n<source src="data:audio/ogg;base64,{(base64.b64encode(fanfare_file.read()).decode())}" type="audio/mp3">\nYour browser does not support the audio element.\n</audio>'
     return fanfare_html
 
@@ -59,6 +70,8 @@ tags = get_tag_list(df)
 
 if not st.session_state["access"]:
     st.info("**You do not have access yet to the generator.** Please contact the site owner for access.", icon="🔒")
+else:
+    st.success("&ensp;**Generator enabled.**", icon="🟢")
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
     selected_tags = st.multiselect("Select Tags", tags, default=["PCP"])
@@ -87,7 +100,9 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
         filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
 
         # st.divider()
-        if st.button("Generate!", type="primary", disabled=(not st.session_state["access"])):
+        generate = st.button("Generate!", type="primary", disabled=(not st.session_state["access"]))
+        
+        if generate:
             st.session_state["problem_set"] = filtered_df.copy()
             st.balloons()
             st.toast(f"**:blue[{str(len(filtered_df)).zfill(1)} Questions] generated.**  \nProblem Set ready!", icon="🎉")
@@ -136,8 +151,11 @@ with st.sidebar:
         if st.button("Access!"):
             if access_key == st.secrets["ACCESS_KEY"]:
                 st.session_state["access"] = True
+                st.toast("Access Granted!", icon="🔓")
+                st.experimental_rerun()
             else:
                 st.session_state["access"] = False
+                st.experimental_rerun()
 
     with st.expander("Secret Settings"):
         password = st.text_input("Enter Password to Enable:", type="password")
@@ -151,7 +169,10 @@ with st.sidebar:
                 st.session_state["auth"] = False
 
 if audio_on:
-    st.session_state["fanfare"] = load_fanfare()
+    if generate:
+        st.session_state["fanfare"] = load_fanfare(len(filtered_df))
+    else:
+        st.session_state["fanfare"] = load_fanfare(1)
 else:
     st.session_state["fanfare"] = ""
 st.session_state["playsound"] = audio_on
