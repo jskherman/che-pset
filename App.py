@@ -145,6 +145,7 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
     
 # Sidebar settings
 with st.sidebar:
+    st.warning('ALL PROGRESS IS LOST when you close the tab or press F5 on the page!', icon="⚠️")
     with st.expander("Other Settings ⚙", expanded=True):
         audio_on = st.checkbox("🔊 **Enable Fanfare?**", value=True)
         access_key = st.text_input("Enter access key to enable generator:", type="password")
