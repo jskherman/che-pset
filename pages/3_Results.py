@@ -84,6 +84,13 @@ def write_incorrect_questions(incorrect):
             incorrect_strings.append(string)
     return incorrect_strings
 
+@st.cache_resource
+def connect_to_gsheets():
+    gc = gspread.service_account_from_dict(st.secrets["GSHEETS_CREDS"])
+    sh = gc.open("Board Review")
+    ws = sh.worksheet("PS Data")
+    return gc, ws
+
 st.set_page_config(page_title="Results :: Problem Set Generator", page_icon="🏆")
 
 if "problem_set" not in st.session_state:
@@ -93,9 +100,7 @@ if not st.session_state["problem_set"]["Done"].all():
     st.error("**Please complete the quiz first!**", icon="❗")
     st.stop()
 
-gc = gspread.service_account_from_dict(st.secrets["GSHEETS_CREDS"])
-sh = gc.open("Board Review")
-ws = sh.worksheet("PS Data")
+gc, ws = connect_to_gsheets()
 
 results = generate_streak_info(st.session_state["problem_set"].copy(), col="Correct")
 # results
