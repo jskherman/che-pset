@@ -1,5 +1,3 @@
-import time
-
 import pandas as pd
 import streamlit as st
 
@@ -95,3 +93,5 @@ if pset["Done"].all():
 with st.sidebar:
     st.info("If it does not navigate properly,  \npress **R** to REFRESH.")
     st.dataframe(pset[["QNum", "Done"]].rename(columns={"QNum": "Question", "Done": "Done?"}).set_index("Question"), width=150)
+
+# pset

@@ -1,3 +1,5 @@
+from random import sample
+
 import pandas as pd
 import streamlit as st
 
@@ -41,6 +43,8 @@ def generate_50_set(df, tags):
     filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
     return filtered_df.copy()
 
+if "auth" not in st.session_state:
+    st.session_state["auth"] = False
 
 df = get_data()
 tags = get_tag_list(df)
@@ -64,6 +68,8 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
         for index, row in filtered_df.iterrows():
             # Create Question Number
             filtered_df.loc[index, "QNum"] = f"Q-{index + 1}"
+            filtered_df["Choices"][index] = sample(row["Choices"], k=4)
+
         filtered_df["Correct"] = False
         filtered_df["Done"] = False
         filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
@@ -109,18 +115,21 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
 #     st.toast("**:blue[50 Questions] generated.**  \nProblem Set ready!", icon="🎉")
 
 # st.session_state["problem_set"]
-
-# Secret Settings
-
-st.subheader("Secret Settings")
-
-password = st.text_input("Enter Password:", type="password")
-
-
+    
 # Sidebar settings
 with st.sidebar:
-    with st.expander("**Other Settings** ⚙", expanded=True):
+    with st.expander("Other Settings ⚙", expanded=True):
         audio_on = st.checkbox("🔊 **Enable Fanfare?**", value=True)
+    with st.expander("Secret Settings"):
+        password = st.text_input("Enter Password to Enable:", type="password")
+        if st.button("Submit", type="primary"):
+            if password == st.secrets["PASSWORD"]:
+                st.balloons()
+                st.toast("Authenticated.", icon="🔓")
+                st.session_state["auth"] = True
+            else:
+                st.error("Denied.", icon="🔒")
+                st.session_state["auth"] = False
 
 if audio_on:
     st.session_state["fanfare"] = load_fanfare()
