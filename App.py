@@ -69,7 +69,7 @@ tags = get_tag_list(df)
 # Main ========================================================================
 
 if not st.session_state["access"]:
-    st.info("**You do not have access yet to the generator.** Please contact the site owner for access.", icon="🔒")
+    st.info("**You do not have access to the generator.** Please contact the site owner for access.", icon="🔒")
 else:
     st.success("&ensp;**Generator enabled.**", icon="🟢")
 
