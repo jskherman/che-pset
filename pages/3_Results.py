@@ -16,27 +16,6 @@ def generate_plot_data(df):
 
 @st.cache_data
 def generate_streak_info(results, col:str = "Correct"):
-    """
-    Parameters
-    ----------
-    
-    results:
-        A dataframe containing data about shots.
-        Must contain a `results` column with two
-        unique values for made and missed shots.
-        Must be homogenous (contain only shots
-        that qualify for the streak type you want
-        to calculate (eg all FT for a single
-        player) and be pre-sorted by time.
-
-    Returns
-    -------
-
-    shots_with_streaks:
-        The original dataframe with a new column
-        `Streak` containing integers with 
-        counts for each streak.
-    """
     
     data = results[col].to_frame()
     data["start_of_streak"] = data[col].ne(data[col].shift())

@@ -48,12 +48,17 @@ st.title("The Generator")
 
 if "auth" not in st.session_state:
     st.session_state["auth"] = False
+if "access" not in st.session_state:
+    st.session_state["access"] = False
 
 df = get_data()
 tags = get_tag_list(df)
 
 
 # Main ========================================================================
+
+if not st.session_state["access"]:
+    st.info("**You do not have access yet to the generator.** Please contact the site owner for access.", icon="🔒")
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
     selected_tags = st.multiselect("Select Tags", tags, default=["PCP"])
@@ -82,7 +87,7 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
         filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
 
         # st.divider()
-        if st.button("Generate!", type="primary"):
+        if st.button("Generate!", type="primary", disabled=(not st.session_state["access"])):
             st.session_state["problem_set"] = filtered_df.copy()
             st.balloons()
             st.toast(f"**:blue[{str(len(filtered_df)).zfill(1)} Questions] generated.**  \nProblem Set ready!", icon="🎉")
@@ -127,6 +132,13 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
 with st.sidebar:
     with st.expander("Other Settings ⚙", expanded=True):
         audio_on = st.checkbox("🔊 **Enable Fanfare?**", value=True)
+        access_key = st.text_input("Enter access key to enable generator:", type="password")
+        if st.button("Access!"):
+            if access_key == st.secrets["ACCESS_KEY"]:
+                st.session_state["access"] = True
+            else:
+                st.session_state["access"] = False
+
     with st.expander("Secret Settings"):
         password = st.text_input("Enter Password to Enable:", type="password")
         if st.button("Submit", type="primary"):
@@ -159,7 +171,7 @@ st.markdown(
     | **Generator** | This page allows you to generate a problem set based on the tags you select and number of questions you want.         |
     | **Quiz**      | This page allows you to take the quiz. You can navigate through the questions using the buttons or the dropdown menu. |
     | **Results**   | This page shows you the results of the quiz you took. It also shows you a run chart of your answers.                  |
-    | **Analytics** | This page is specific to me and shows me the analytics of the questions I've answered over time. No peeking.          |
+    | **Analytics** | This page is specific to me and shows me the analytics of the questions I've answered over time. No peeking ;)        |
     """,
     unsafe_allow_html=True
 )
