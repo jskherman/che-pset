@@ -1,5 +1,7 @@
 # App specific ignores
 *.mp3
+*.mp4
+*.webm
 !assets/fanfare_*.mp3
 qna.csv
 oldapp.py
