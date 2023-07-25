@@ -170,10 +170,13 @@ with st.sidebar:
                 st.session_state["auth"] = False
 
 if audio_on:
-    if generate:
-        st.session_state["fanfare"] = load_fanfare(len(filtered_df))
-    else:
-        st.session_state["fanfare"] = load_fanfare(1)
+    try:
+        if generate:
+            st.session_state["fanfare"] = load_fanfare(len(filtered_df))
+        else:
+            st.session_state["fanfare"] = load_fanfare(1)
+    except NameError:
+        st.session_state["fanfare"] = ""
 else:
     st.session_state["fanfare"] = ""
 st.session_state["playsound"] = audio_on
