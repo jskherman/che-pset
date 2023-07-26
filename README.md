@@ -6,6 +6,10 @@ This is a quick prototype of a web application, built to help me review for the 
 
 
 
+https://github.com/jskherman/che-pset/assets/68434444/ee11c50a-6df6-4ea4-b213-9b7c2a005514
+
+
+
 ## Installation
 
 1. Clone this repository to your local machine.
