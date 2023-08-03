@@ -74,7 +74,7 @@ else:
     st.success("&ensp;**Generator enabled.**", icon="🟢")
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
-    selected_tags = st.multiselect("Select Tags", tags, default=["PCP"])
+    selected_tags = st.multiselect("Select Tags", tags, default=["CHE"])
     st.session_state["selected_tags"] = selected_tags.copy()
     filtered_df = df[df["Tags"].apply(lambda x: any(item in x for item in selected_tags))].copy()
     filtered_df.sort_values(by="ID").reset_index(inplace=True, drop=True)
