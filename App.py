@@ -1,4 +1,5 @@
 from random import sample
+from typing import List
 
 import pandas as pd
 import streamlit as st
@@ -10,17 +11,27 @@ def get_data():
     qna_csv = st.secrets["QNA_CSV"]
     df = pd.read_csv(qna_csv)
     df.dropna(inplace=True, axis=0, subset=["Question", "Answer"])
-    for index, row in df.iterrows():
-        row["Choices"] = [item.strip() for item in row["Choices"].split(";")]
-        row["Tags"] = [item.strip() for item in row["Tags"].split(";")]
-        df["Choices"][index] = row["Choices"]
-        df["Tags"][index] = row["Tags"]
+    df["Choices"] = (
+        df["Choices"].str.split(";").apply(lambda x: [item.strip() for item in x])
+    )
+    df["Tags"] = df["Tags"].str.split(";").apply(lambda x: [item.strip() for item in x])
     return df
 
+
 @st.cache_data
-def get_tag_list(df: pd.DataFrame) -> list:
-    tags = {x for l in df["Tags"] for x in l}
-    return list(tags)
+def get_tag_list(df: pd.DataFrame) -> List[str]:
+    """
+    Returns a list of unique tags from the given DataFrame.
+
+    Args:
+        df (pd.DataFrame): The DataFrame containing the tags.
+
+    Returns:
+        List[str]: A list of unique tags.
+    """
+    tags = [tag for tags in df["Tags"] for tag in tags]
+    return list(set(tags))
+
 
 def load_fanfare(n):
     import base64
@@ -40,8 +51,11 @@ def load_fanfare(n):
     fanfare_html = f'\n<audio autoplay class="stAudio">\n<source src="data:audio/ogg;base64,{(base64.b64encode(fanfare_file.read()).decode())}" type="audio/mp3">\nYour browser does not support the audio element.\n</audio>'
     return fanfare_html
 
+
 def generate_50_set(df, tags):
-    filtered_df = df[df["Tags"].apply(lambda x: any(item in x for item in selected_tags))].copy()
+    filtered_df = df[
+        df["Tags"].apply(lambda x: any(item in x for item in selected_tags))
+    ].copy()
     filtered_df.sort_values(by="ID").reset_index(inplace=True, drop=True)
     filtered_df = filtered_df.sample(n=50, replace=False).sort_values(by="ID")
     filtered_df.reset_index(inplace=True, drop=True)
@@ -50,8 +64,11 @@ def generate_50_set(df, tags):
         filtered_df.loc[index, "QNum"] = f"Q-{index + 1}"
     filtered_df["Correct"] = False
     filtered_df["Done"] = False
-    filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
+    filtered_df = filtered_df[
+        ["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]
+    ]
     return filtered_df.copy()
+
 
 # Setup =======================================================================
 st.set_page_config(page_title="Problem Set Generator", page_icon="🔁")
@@ -69,14 +86,19 @@ tags = get_tag_list(df)
 # Main ========================================================================
 
 if not st.session_state["access"]:
-    st.info("**You do not have access to the generator.** Please contact the site owner for access.", icon="🔒")
+    st.info(
+        "**You do not have access to the generator.** Please contact the site owner for access.",
+        icon="🔒",
+    )
 else:
     st.success("&ensp;**Generator enabled.**", icon="🟢")
 
 with st.expander("**Problem Set Generator** ⚙", expanded=True):
     selected_tags = st.multiselect("Select Tags", tags, default=["CHE"])
     st.session_state["selected_tags"] = selected_tags.copy()
-    filtered_df = df[df["Tags"].apply(lambda x: any(item in x for item in selected_tags))].copy()
+    filtered_df = df[
+        df["Tags"].apply(lambda x: any(item in x for item in selected_tags))
+    ].copy()
     filtered_df.sort_values(by="ID").reset_index(inplace=True, drop=True)
 
     if len(filtered_df) == 0:
@@ -84,7 +106,12 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
         # st.button("Generate Problem Set", disabled=True)
     else:
         if len(filtered_df) > 1:
-            num_questions = st.slider("Number of questions to generate:", min_value=1, max_value=len(filtered_df), value=len(filtered_df))
+            num_questions = st.slider(
+                "Number of questions to generate:",
+                min_value=1,
+                max_value=len(filtered_df),
+                value=len(filtered_df),
+            )
             filtered_df = filtered_df.sample(n=num_questions, replace=False)
         else:
             st.info("&emsp;**Only _:red[one]_ question found.**", icon="ℹ️")
@@ -97,15 +124,22 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
 
         filtered_df["Correct"] = False
         filtered_df["Done"] = False
-        filtered_df = filtered_df[["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]]
+        filtered_df = filtered_df[
+            ["ID", "QNum", "Correct", "Done", "Question", "Choices", "Answer", "Tags"]
+        ]
 
         # st.divider()
-        generate = st.button("Generate!", type="primary", disabled=(not st.session_state["access"]))
-        
+        generate = st.button(
+            "Generate!", type="primary", disabled=(not st.session_state["access"])
+        )
+
         if generate:
             st.session_state["problem_set"] = filtered_df.copy()
             st.balloons()
-            st.toast(f"**:blue[{str(len(filtered_df)).zfill(1)} Questions] generated.**  \nProblem Set ready!", icon="🎉")
+            st.toast(
+                f"**:blue[{str(len(filtered_df)).zfill(1)} Questions] generated.**  \nProblem Set ready!",
+                icon="🎉",
+            )
 
 # st.divider()
 
@@ -142,13 +176,18 @@ with st.expander("**Problem Set Generator** ⚙", expanded=True):
 #     st.toast("**:blue[50 Questions] generated.**  \nProblem Set ready!", icon="🎉")
 
 # st.session_state["problem_set"]
-    
+
 # Sidebar settings
 with st.sidebar:
-    st.warning('ALL PROGRESS IS LOST when you close the tab or press F5 on the page!', icon="⚠️")
+    st.warning(
+        "ALL PROGRESS IS LOST when you close the tab or press F5 on the page!",
+        icon="⚠️",
+    )
     with st.expander("Other Settings ⚙", expanded=True):
         audio_on = st.checkbox("🔊 **Enable Fanfare?**", value=True)
-        access_key = st.text_input("Enter access key to enable generator:", type="password")
+        access_key = st.text_input(
+            "Enter access key to enable generator:", type="password"
+        )
         if st.button("Access!"):
             if access_key == st.secrets["ACCESS_KEY"]:
                 st.session_state["access"] = True
@@ -198,5 +237,5 @@ st.markdown(
     | **Results**   | This page shows you the results of the quiz you took. It also shows you a run chart of your answers.                  |
     | **Analytics** | This page is specific to me and shows me the analytics of the questions I've answered over time. No peeking ;)        |
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
